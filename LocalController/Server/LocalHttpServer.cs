@@ -56,11 +56,14 @@ namespace LocalController.Server
 
             var prefixes = new[]
             {
+                "http://*:" + settings.Port + "/",
                 "http://127.0.0.1:" + settings.Port + "/",
                 "http://localhost:" + settings.Port + "/"
             };
 
             Exception lastException = null;
+            string boundPrefix = null;
+
             foreach (var prefix in prefixes)
             {
                 try
@@ -68,6 +71,7 @@ namespace LocalController.Server
                     _listener = new HttpListener();
                     _listener.Prefixes.Add(prefix);
                     _listener.Start();
+                    boundPrefix = prefix;
                     break;
                 }
                 catch (Exception ex)
@@ -90,14 +94,21 @@ namespace LocalController.Server
             {
                 var message = "Không thể start HTTP listener ở port " + settings.Port +
                               ". Nếu lỗi Access is denied, mở CMD/Powershell Admin và chạy: " +
-                              "netsh http add urlacl url=http://localhost:" + settings.Port + "/ user=%USERNAME%";
+                              "netsh http add urlacl url=http://+:" + settings.Port + "/ user=%USERNAME%";
                 throw new InvalidOperationException(message, lastException);
+            }
+
+            if (boundPrefix != null && !boundPrefix.Contains("+") && !boundPrefix.Contains("*") && !boundPrefix.Contains("0.0.0.0"))
+            {
+                _logger.Log("Warning: Server bound to localhost only (" + boundPrefix + "). LAN access may not work. " +
+                            "To enable LAN access, run as Admin or execute: " +
+                            "netsh http add urlacl url=http://+:" + settings.Port + "/ user=%USERNAME%");
             }
 
             _cts = new CancellationTokenSource();
             _serverTask = Task.Run(() => ListenLoop(_cts.Token));
             IsRunning = true;
-            _logger.Log("Server started on port " + settings.Port);
+            _logger.Log("Server started on port " + settings.Port + " (" + (boundPrefix ?? "unknown") + ")");
         }
 
         public void Stop()
