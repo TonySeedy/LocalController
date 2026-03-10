@@ -120,6 +120,23 @@ const UI = {
     bindEvents() {
         const d = this.dom;
         
+        // --- Native UI Enhancements ---
+        // Release focus from buttons after click to mimic native app feel (prevents sticky hover/focus states)
+        document.addEventListener('click', (e) => {
+            const btn = e.target.closest('button');
+            if (btn) {
+                // Small timeout to ensure the click action registers before blurring
+                setTimeout(() => btn.blur(), 50);
+            }
+        });
+
+        // Prevent context menu on long press for a more app-like feel
+        document.addEventListener('contextmenu', (e) => {
+            if (!e.target.closest('input') && !e.target.closest('textarea')) {
+                e.preventDefault();
+            }
+        });
+
         // Manual Refresh
         if (d.refreshBtn) d.refreshBtn.addEventListener('click', () => Actions.refreshStatus());
 
