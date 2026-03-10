@@ -130,8 +130,14 @@ const UI = {
 
         // Volume Controls
         if (d.volumeSlider) {
-            d.volumeSlider.addEventListener('input', (e) => Actions.updateVolumeLocal(Number(e.target.value)));
-            d.volumeSlider.addEventListener('change', (e) => Actions.commitVolume(Number(e.target.value)));
+            d.volumeSlider.addEventListener('input', (e) => {
+                const nextValue = Actions.normalizeVolume(e.target.value, store.state.data.volume);
+                Actions.updateVolumeLocal(nextValue);
+            });
+            d.volumeSlider.addEventListener('change', async (e) => {
+                const nextValue = Actions.normalizeVolume(e.target.value, store.state.data.volume);
+                await Actions.commitVolume(nextValue);
+            });
         }
         
         if (d.btnVolDown) d.btnVolDown.addEventListener('click', () => Actions.volumeStep(-2));
@@ -235,6 +241,12 @@ const UI = {
 
 // --- Actions / API ---
 const Actions = {
+    normalizeVolume(value, fallback = 50) {
+        const parsed = Number(value);
+        if (!Number.isFinite(parsed)) return Math.min(100, Math.max(0, Number(fallback) || 50));
+        return Math.min(100, Math.max(0, parsed));
+    },
+
     async api(path, method = "GET", body = null) {
         const options = { method, headers: {} };
         if (body !== null) {
@@ -298,11 +310,12 @@ const Actions = {
     },
 
     updateVolumeLocal(value) {
+        const safeValue = this.normalizeVolume(value, store.state.data.volume);
         store.setState({ lastVolumeUpdate: Date.now() });
-        store.updateData({ volume: value });
+        store.updateData({ volume: safeValue });
         
         // Update visual slider immediately
-        const percent = value;
+        const percent = safeValue;
         const fill = document.getElementById('volumeFill');
         const thumb = document.getElementById('volumeThumb');
         if (fill) fill.style.width = `${percent}%`;
@@ -310,7 +323,9 @@ const Actions = {
     },
 
     async commitVolume(value) {
-        await this.api(CONFIG.API_ENDPOINTS.VOLUME_SET, "POST", { value });
+        const safeValue = this.normalizeVolume(value, store.state.data.volume);
+        this.updateVolumeLocal(safeValue);
+        await this.api(CONFIG.API_ENDPOINTS.VOLUME_SET, "POST", { value: safeValue });
     },
 
     async volumeStep(delta) {

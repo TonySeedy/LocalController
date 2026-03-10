@@ -62,10 +62,32 @@
         input[type=range] {
             -webkit-appearance: none; 
             background: transparent; 
+            height: 100%;
+            touch-action: auto;
         }
         
         input[type=range]::-webkit-slider-thumb {
             -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 9999px;
+            background: transparent;
+            border: 0;
+            cursor: pointer;
+        }
+
+        input[type=range]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 9999px;
+            background: transparent;
+            border: 0;
+            cursor: pointer;
+        }
+
+        input[type=range]::-moz-range-track {
+            background: transparent;
+            border: 0;
         }
 
         input[type=range]:focus {
@@ -104,7 +126,7 @@
         <main class="flex-1 flex flex-col gap-5">
             
             <!-- Media Card -->
-            <section class="relative overflow-hidden rounded-3xl bg-indigo-600 text-white shadow-xl shadow-indigo-200 transition-transform duration-300 hover:scale-[1.01]">
+            <section class="relative overflow-hidden rounded-3xl bg-indigo-600 text-white shadow-xl shadow-indigo-200">
                 <!-- Background Decoration -->
                 <div class="absolute top-0 right-0 -mr-8 -mt-8 w-40 h-40 rounded-full bg-white opacity-5 blur-2xl"></div>
                 <div class="absolute bottom-0 left-0 -ml-8 -mb-8 w-40 h-40 rounded-full bg-white opacity-5 blur-2xl"></div>
