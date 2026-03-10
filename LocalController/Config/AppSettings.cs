@@ -5,5 +5,7 @@ namespace LocalController.Config
         public int Port { get; set; } = 10000;
 
         public int RefreshInterval { get; set; } = 10000;
+
+        public string Password { get; set; } = "";
     }
 }

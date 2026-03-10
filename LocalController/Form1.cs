@@ -26,6 +26,7 @@ namespace LocalController
         private Label _lblAddress;
         private TextBox _txtPort;
         private TextBox _txtRefreshInterval;
+        private TextBox _txtPassword;
         private Button _btnStart;
         private Button _btnStop;
         private TextBox _txtLogs;
@@ -59,7 +60,7 @@ namespace LocalController
             {
                 Dock = DockStyle.Fill,
                 ColumnCount = 2,
-                RowCount = 8,
+                RowCount = 9,
                 Padding = new Padding(12)
             };
             panel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 180));
@@ -68,9 +69,10 @@ namespace LocalController
             panel.RowStyles.Add(new RowStyle(SizeType.Absolute, 32));
             panel.RowStyles.Add(new RowStyle(SizeType.Absolute, 32));
             panel.RowStyles.Add(new RowStyle(SizeType.Absolute, 32));
-            panel.RowStyles.Add(new RowStyle(SizeType.Absolute, 42));
-            panel.RowStyles.Add(new RowStyle(SizeType.Absolute, 12));
-            panel.RowStyles.Add(new RowStyle(SizeType.Absolute, 28));
+            panel.RowStyles.Add(new RowStyle(SizeType.Absolute, 32)); // Password
+            panel.RowStyles.Add(new RowStyle(SizeType.Absolute, 42)); // Buttons
+            panel.RowStyles.Add(new RowStyle(SizeType.Absolute, 12)); // Spacing
+            panel.RowStyles.Add(new RowStyle(SizeType.Absolute, 28)); // Logs Label
             panel.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
 
             panel.Controls.Add(new Label { Text = "Status:", Dock = DockStyle.Fill, TextAlign = System.Drawing.ContentAlignment.MiddleLeft }, 0, 0);
@@ -89,17 +91,21 @@ namespace LocalController
             _txtRefreshInterval = new TextBox { Dock = DockStyle.Fill, Text = _settings.RefreshInterval.ToString() };
             panel.Controls.Add(_txtRefreshInterval, 1, 3);
 
+            panel.Controls.Add(new Label { Text = "Mật khẩu (chỉ nhập số, để trống nếu không dùng):", Dock = DockStyle.Fill, TextAlign = System.Drawing.ContentAlignment.MiddleLeft }, 0, 4);
+            _txtPassword = new TextBox { Dock = DockStyle.Fill, Text = _settings.Password, UseSystemPasswordChar = true };
+            panel.Controls.Add(_txtPassword, 1, 4);
+
             var buttonPanel = new FlowLayoutPanel { Dock = DockStyle.Fill };
             _btnStart = new Button { Text = "Start", Width = 100, Height = 30 };
             _btnStop = new Button { Text = "Stop", Width = 100, Height = 30, Enabled = false };
             buttonPanel.Controls.Add(_btnStart);
             buttonPanel.Controls.Add(_btnStop);
-            panel.Controls.Add(new Label { Text = "", Dock = DockStyle.Fill }, 0, 4);
-            panel.Controls.Add(buttonPanel, 1, 4);
+            panel.Controls.Add(new Label { Text = "", Dock = DockStyle.Fill }, 0, 5);
+            panel.Controls.Add(buttonPanel, 1, 5);
 
-            panel.Controls.Add(new Label { Text = "Logs:", Dock = DockStyle.Fill, TextAlign = System.Drawing.ContentAlignment.MiddleLeft }, 0, 6);
+            panel.Controls.Add(new Label { Text = "Logs:", Dock = DockStyle.Fill, TextAlign = System.Drawing.ContentAlignment.MiddleLeft }, 0, 7);
             _txtLogs = new TextBox { Dock = DockStyle.Fill, Multiline = true, ReadOnly = true, ScrollBars = ScrollBars.Vertical };
-            panel.Controls.Add(_txtLogs, 0, 7);
+            panel.Controls.Add(_txtLogs, 0, 8);
             panel.SetColumnSpan(_txtLogs, 2);
 
             Controls.Add(panel);
@@ -130,7 +136,8 @@ namespace LocalController
             _settings = new AppSettings
             {
                 Port = port,
-                RefreshInterval = refreshInterval
+                RefreshInterval = refreshInterval,
+                Password = _txtPassword.Text
             };
             _configService.SaveSettings(_settings);
 
@@ -191,6 +198,7 @@ namespace LocalController
             _btnStop.Enabled = running;
             _txtPort.Enabled = !running;
             _txtRefreshInterval.Enabled = !running;
+            _txtPassword.Enabled = !running;
 
             if (running)
             {

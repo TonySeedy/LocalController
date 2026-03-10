@@ -245,6 +245,47 @@
         </footer>
     </div>
 
+    <!-- Password Modal -->
+    <div id="password-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900 bg-opacity-95 hidden transition-opacity duration-300">
+        <div class="bg-gray-800 rounded-3xl p-6 w-full max-w-xs mx-4 shadow-2xl border border-gray-700 transform transition-transform duration-300 scale-100">
+            <div class="flex flex-col items-center mb-6">
+                <div class="w-12 h-12 bg-blue-500/20 rounded-full flex items-center justify-center mb-3 text-blue-400">
+                    <span class="material-icons-round text-2xl">lock</span>
+                </div>
+                <h2 class="text-xl font-bold text-white text-center">Xác thực</h2>
+                <p class="text-gray-400 text-sm text-center mt-1">Nhập mật khẩu để điều khiển</p>
+            </div>
+            
+            <!-- Password Display -->
+            <div class="mb-6 relative">
+                <input type="password" id="password-display" readonly 
+                    class="w-full bg-gray-900/50 text-white text-3xl text-center py-4 rounded-2xl border border-gray-700 focus:outline-none focus:border-blue-500/50 tracking-[0.5em] placeholder-gray-700 transition-colors" 
+                    placeholder="••••">
+                <p id="password-error" class="absolute -bottom-6 left-0 right-0 text-red-400 text-xs font-medium text-center opacity-0 transition-opacity">Mật khẩu không đúng</p>
+            </div>
+
+            <!-- Keypad -->
+            <div class="grid grid-cols-3 gap-3">
+                <button onclick="appendPassword('1')" class="aspect-square bg-gray-700 hover:bg-gray-600 active:bg-blue-600 active:scale-95 text-white text-2xl font-medium rounded-2xl transition-all shadow-lg shadow-gray-900/20">1</button>
+                <button onclick="appendPassword('2')" class="aspect-square bg-gray-700 hover:bg-gray-600 active:bg-blue-600 active:scale-95 text-white text-2xl font-medium rounded-2xl transition-all shadow-lg shadow-gray-900/20">2</button>
+                <button onclick="appendPassword('3')" class="aspect-square bg-gray-700 hover:bg-gray-600 active:bg-blue-600 active:scale-95 text-white text-2xl font-medium rounded-2xl transition-all shadow-lg shadow-gray-900/20">3</button>
+                <button onclick="appendPassword('4')" class="aspect-square bg-gray-700 hover:bg-gray-600 active:bg-blue-600 active:scale-95 text-white text-2xl font-medium rounded-2xl transition-all shadow-lg shadow-gray-900/20">4</button>
+                <button onclick="appendPassword('5')" class="aspect-square bg-gray-700 hover:bg-gray-600 active:bg-blue-600 active:scale-95 text-white text-2xl font-medium rounded-2xl transition-all shadow-lg shadow-gray-900/20">5</button>
+                <button onclick="appendPassword('6')" class="aspect-square bg-gray-700 hover:bg-gray-600 active:bg-blue-600 active:scale-95 text-white text-2xl font-medium rounded-2xl transition-all shadow-lg shadow-gray-900/20">6</button>
+                <button onclick="appendPassword('7')" class="aspect-square bg-gray-700 hover:bg-gray-600 active:bg-blue-600 active:scale-95 text-white text-2xl font-medium rounded-2xl transition-all shadow-lg shadow-gray-900/20">7</button>
+                <button onclick="appendPassword('8')" class="aspect-square bg-gray-700 hover:bg-gray-600 active:bg-blue-600 active:scale-95 text-white text-2xl font-medium rounded-2xl transition-all shadow-lg shadow-gray-900/20">8</button>
+                <button onclick="appendPassword('9')" class="aspect-square bg-gray-700 hover:bg-gray-600 active:bg-blue-600 active:scale-95 text-white text-2xl font-medium rounded-2xl transition-all shadow-lg shadow-gray-900/20">9</button>
+                <button onclick="clearPassword()" class="aspect-square bg-red-500/10 hover:bg-red-500/20 active:bg-red-500/30 text-red-400 text-lg font-medium rounded-2xl transition-all flex items-center justify-center">
+                    <span class="material-icons-round">backspace</span>
+                </button>
+                <button onclick="appendPassword('0')" class="aspect-square bg-gray-700 hover:bg-gray-600 active:bg-blue-600 active:scale-95 text-white text-2xl font-medium rounded-2xl transition-all shadow-lg shadow-gray-900/20">0</button>
+                <button onclick="submitPassword()" class="aspect-square bg-blue-600 hover:bg-blue-500 active:bg-blue-700 active:scale-95 text-white text-lg font-medium rounded-2xl transition-all flex items-center justify-center shadow-lg shadow-blue-900/20">
+                    <span class="material-icons-round">check</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Application Logic -->
     <script src="app.js"></script>
 </body>

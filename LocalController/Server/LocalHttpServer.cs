@@ -22,6 +22,7 @@ namespace LocalController.Server
         private readonly SystemService _systemService;
         private readonly StatusService _statusService;
         private readonly string _baseDirectory;
+        private AppSettings _currentSettings;
 
         private HttpListener _listener;
         private CancellationTokenSource _cts;
@@ -49,6 +50,8 @@ namespace LocalController.Server
 
         public void Start(AppSettings settings)
         {
+            _currentSettings = settings;
+
             if (IsRunning)
             {
                 return;
@@ -179,6 +182,43 @@ namespace LocalController.Server
                 {
                     ServeStatic(response, "style.css", "text/css; charset=utf-8");
                     return;
+                }
+
+                if (path == "/api/auth" && method == "POST")
+                {
+                    var body = ReadBody(request);
+                    Dictionary<string, JsonElement> payload = null;
+                    try
+                    {
+                        payload = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(body);
+                    }
+                    catch { }
+
+                    string password = "";
+                    if (payload != null && payload.ContainsKey("password"))
+                    {
+                        password = payload["password"].ToString();
+                    }
+
+                    if (_currentSettings.Password == password)
+                    {
+                        WriteJson(response, Success("Authenticated", null));
+                    }
+                    else
+                    {
+                        WriteJson(response, Error("Invalid password"), 401);
+                    }
+                    return;
+                }
+
+                if (path.StartsWith("/api/") && !string.IsNullOrEmpty(_currentSettings.Password) && path != "/api/ping")
+                {
+                    var authHeader = request.Headers["X-Auth-Password"];
+                    if (authHeader != _currentSettings.Password)
+                    {
+                        WriteJson(response, Error("Unauthorized"), 401);
+                        return;
+                    }
                 }
 
                 if (path == "/api/ping" && method == "GET")

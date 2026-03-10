@@ -28,6 +28,7 @@ const store = {
         isUpdating: false,
         lastVolumeUpdate: 0,
         isConnected: true,
+        password: localStorage.getItem('lc_password') || '',
         data: {
             media: { title: 'No Media Playing', artist: 'Unknown', playing: false },
             volume: 50,
@@ -70,6 +71,56 @@ const UI = {
         Actions.refreshStatus();
     },
 
+    showPasswordModal() {
+        if (this.dom.passwordModal) {
+            this.dom.passwordModal.classList.remove('hidden');
+            if (this.dom.passwordDisplay) this.dom.passwordDisplay.value = '';
+            if (this.dom.passwordError) this.dom.passwordError.classList.add('opacity-0');
+        }
+    },
+    
+    hidePasswordModal() {
+        if (this.dom.passwordModal) {
+            this.dom.passwordModal.classList.add('hidden');
+        }
+    },
+    
+    appendPassword(digit) {
+        if (this.dom.passwordDisplay) {
+            this.dom.passwordDisplay.value += digit;
+            if (this.dom.passwordError) this.dom.passwordError.classList.add('opacity-0');
+        }
+    },
+    
+    clearPassword() {
+        if (this.dom.passwordDisplay) {
+            const current = this.dom.passwordDisplay.value;
+            this.dom.passwordDisplay.value = current.slice(0, -1);
+            if (this.dom.passwordError) this.dom.passwordError.classList.add('opacity-0');
+        }
+    },
+
+    async submitPassword() {
+        if (!this.dom.passwordDisplay) return;
+        const pwd = this.dom.passwordDisplay.value;
+        
+        store.setState({ password: pwd });
+        localStorage.setItem('lc_password', pwd);
+        
+        const result = await Actions.api(CONFIG.API_ENDPOINTS.STATUS, "GET", null, true);
+        
+        if (result && result.success) {
+            this.hidePasswordModal();
+            Actions.refreshStatus();
+        } else {
+             if (this.dom.passwordError) {
+                this.dom.passwordError.classList.remove('opacity-0');
+                this.dom.passwordError.classList.remove('hidden');
+            }
+            this.dom.passwordDisplay.value = '';
+        }
+    },
+
     cacheDOM() {
         this.dom = {
             // Header
@@ -99,7 +150,12 @@ const UI = {
             // System
             btnLock: document.getElementById('btnLock'),
             lockState: document.getElementById('lockState'),
-            lockStatusDot: document.getElementById('lockStatusDot')
+            lockStatusDot: document.getElementById('lockStatusDot'),
+
+            // Password
+            passwordModal: document.getElementById('password-modal'),
+            passwordDisplay: document.getElementById('password-display'),
+            passwordError: document.getElementById('password-error')
         };
         
         // SVG Circle circumference for progress
@@ -282,8 +338,13 @@ const Actions = {
         return Math.min(100, Math.max(0, parsed));
     },
 
-    async api(path, method = "GET", body = null) {
-        const options = { method, headers: {} };
+    async api(path, method = "GET", body = null, suppressAuthModal = false) {
+        const options = { 
+            method, 
+            headers: {
+                "X-Auth-Password": store.state.password
+            } 
+        };
         if (body !== null) {
             options.headers["Content-Type"] = "application/json";
             options.body = JSON.stringify(body);
@@ -291,6 +352,10 @@ const Actions = {
 
         try {
             const response = await fetch(path, options);
+            if (response.status === 401) {
+                if (!suppressAuthModal) UI.showPasswordModal();
+                throw new Error('Unauthorized');
+            }
             if (!response.ok) throw new Error('Network response was not ok');
             const data = await response.json();
             
@@ -298,7 +363,9 @@ const Actions = {
             return data;
         } catch (error) {
             console.error('API Error:', error);
-            store.setState({ isConnected: false });
+            if (error.message !== 'Unauthorized') {
+                store.setState({ isConnected: false });
+            }
             return { success: false };
         }
     },
@@ -395,3 +462,8 @@ const Actions = {
 document.addEventListener('DOMContentLoaded', () => {
     UI.init();
 });
+
+// Global Password Handlers
+window.appendPassword = (d) => UI.appendPassword(d);
+window.clearPassword = () => UI.clearPassword();
+window.submitPassword = () => UI.submitPassword();

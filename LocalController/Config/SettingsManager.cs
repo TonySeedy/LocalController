@@ -43,6 +43,11 @@ namespace LocalController.Config
                     settings.RefreshInterval = 10000;
                 }
 
+                if (settings.Password == null)
+                {
+                    settings.Password = "";
+                }
+
                 return settings;
             }
             catch
