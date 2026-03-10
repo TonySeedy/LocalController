@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PC Remote Server</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <main class="container">
+        <h1>PC Remote Server</h1>
+
+        <section class="card">
+            <h2>MEDIA</h2>
+            <div class="actions">
+                <button id="btnPrev">⏮</button>
+                <button id="btnPlayPause">⏯</button>
+                <button id="btnNext">⏭</button>
+            </div>
+            <p id="mediaTitle">Title: Unknown - Unknown</p>
+        </section>
+
+        <section class="card">
+            <h2>VOLUME</h2>
+            <div class="actions">
+                <button id="btnVolumeDown">-</button>
+                <span id="volumeValue">0%</span>
+                <button id="btnVolumeUp">+</button>
+            </div>
+            <input id="volumeSlider" type="range" min="0" max="100" value="0">
+            <div class="actions">
+                <button id="btnMute">Mute</button>
+            </div>
+        </section>
+
+        <section class="card">
+            <h2>SYSTEM</h2>
+            <button id="btnLock">Lock PC</button>
+            <p id="lockState">Status: Unknown</p>
+        </section>
+
+        <section class="card">
+            <h2>REFRESH</h2>
+            <button id="btnRefresh">Refresh</button>
+            <p id="refreshValue">Auto refresh: 0s</p>
+        </section>
+    </main>
+
+    <script src="/app.js"></script>
+</body>
+</html>
