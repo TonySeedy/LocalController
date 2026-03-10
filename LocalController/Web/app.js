@@ -196,10 +196,7 @@ const UI = {
         if (this.dom.volumeSlider) this.dom.volumeSlider.value = volume;
         if (this.dom.iconMute) this.dom.iconMute.textContent = muted ? 'volume_off' : 'volume_up';
         
-        // Update visual slider fill and thumb position
-        const percent = volume;
-        if (this.dom.volumeFill) this.dom.volumeFill.style.width = `${percent}%`;
-        if (this.dom.volumeThumb) this.dom.volumeThumb.style.left = `${percent}%`;
+        this.updateVolumeVisuals(volume);
         
         if (this.dom.iconMute) {
             if (muted) {
@@ -208,6 +205,16 @@ const UI = {
                  this.dom.iconMute.classList.remove('text-red-500');
             }
         }
+    },
+
+    updateVolumeVisuals(percent) {
+        // Correct offset for native range input behavior
+        // Formula: calc(percent% + (10px - percent * 0.2px))
+        // This aligns the visual thumb center with the native input thumb center
+        const offset = `calc(${percent}% + (${10 - percent * 0.2}px))`;
+        
+        if (this.dom.volumeFill) this.dom.volumeFill.style.width = offset;
+        if (this.dom.volumeThumb) this.dom.volumeThumb.style.left = offset;
     },
 
     renderSystem(locked) {
@@ -314,12 +321,17 @@ const Actions = {
         store.setState({ lastVolumeUpdate: Date.now() });
         store.updateData({ volume: safeValue });
         
-        // Update visual slider immediately
-        const percent = safeValue;
-        const fill = document.getElementById('volumeFill');
-        const thumb = document.getElementById('volumeThumb');
-        if (fill) fill.style.width = `${percent}%`;
-        if (thumb) thumb.style.left = `${percent}%`;
+        // Update visual slider immediately using UI helper
+        if (typeof UI !== 'undefined' && UI.updateVolumeVisuals) {
+            UI.updateVolumeVisuals(safeValue);
+        } else {
+            // Fallback if UI not ready (shouldn't happen)
+            const offset = `calc(${safeValue}% + (${10 - safeValue * 0.2}px))`;
+            const fill = document.getElementById('volumeFill');
+            const thumb = document.getElementById('volumeThumb');
+            if (fill) fill.style.width = offset;
+            if (thumb) thumb.style.left = offset;
+        }
     },
 
     async commitVolume(value) {
