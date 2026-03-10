@@ -28,48 +28,137 @@ namespace LocalController.Services
             InitializeSmtc();
         }
 
-        private async void InitializeSmtc()
+        private void InitializeSmtc()
         {
-            try
+            Task.Run(async () =>
             {
-                _smtcManager = await GlobalSystemMediaTransportControlsSessionManager.RequestAsync();
-            }
-            catch
-            {
-                // Ignore if GSMTC is not available
-            }
+                try
+                {
+                    _smtcManager = await GlobalSystemMediaTransportControlsSessionManager.RequestAsync();
+                }
+                catch
+                {
+                    // Ignore if GSMTC is not available
+                }
+            });
         }
 
-        public void Play()
+        public async void Play()
         {
-            SendKey(VkMediaPlayPause);
+            bool success = false;
+            try
+            {
+                if (_smtcManager != null)
+                {
+                    var session = _smtcManager.GetCurrentSession();
+                    if (session != null)
+                    {
+                        await session.TryPlayAsync();
+                        success = true;
+                    }
+                }
+            }
+            catch { }
+
+            if (!success)
+            {
+                SendKey(VkMediaPlayPause);
+            }
+
             lock (_sync)
             {
                 _isPlaying = true;
             }
         }
 
-        public void Pause()
+        public async void Pause()
         {
-            SendKey(VkMediaPlayPause);
+            bool success = false;
+            try
+            {
+                if (_smtcManager != null)
+                {
+                    var session = _smtcManager.GetCurrentSession();
+                    if (session != null)
+                    {
+                        await session.TryPauseAsync();
+                        success = true;
+                    }
+                }
+            }
+            catch { }
+
+            if (!success)
+            {
+                SendKey(VkMediaPlayPause);
+            }
+
             lock (_sync)
             {
                 _isPlaying = false;
             }
         }
 
-        public void Next()
+        public async void Next()
         {
+            try
+            {
+                if (_smtcManager != null)
+                {
+                    var session = _smtcManager.GetCurrentSession();
+                    if (session != null)
+                    {
+                        await session.TrySkipNextAsync();
+                        return;
+                    }
+                }
+            }
+            catch { }
+
             SendKey(VkMediaNextTrack);
         }
 
-        public void Previous()
+        public async void Previous()
         {
+            try
+            {
+                if (_smtcManager != null)
+                {
+                    var session = _smtcManager.GetCurrentSession();
+                    if (session != null)
+                    {
+                        await session.TrySkipPreviousAsync();
+                        return;
+                    }
+                }
+            }
+            catch { }
+
             SendKey(VkMediaPrevTrack);
         }
 
-        public void PlayPause()
+        public async void PlayPause()
         {
+            try
+            {
+                if (_smtcManager != null)
+                {
+                    var session = _smtcManager.GetCurrentSession();
+                    if (session != null)
+                    {
+                        await session.TryTogglePlayPauseAsync();
+                        // Update state based on playback info
+                        var info = session.GetPlaybackInfo();
+                        lock (_sync)
+                        {
+                            _isPlaying = info.PlaybackStatus == GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing;
+                        }
+                        return;
+                    }
+                }
+            }
+            catch { }
+
             SendKey(VkMediaPlayPause);
             lock (_sync)
             {
