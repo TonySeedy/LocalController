@@ -56,9 +56,45 @@ namespace LocalController.Server
                 return;
             }
 
-            _listener = new HttpListener();
-            _listener.Prefixes.Add("http://+:" + settings.Port + "/");
-            _listener.Start();
+            var prefixes = new[]
+            {
+                "http://127.0.0.1:" + settings.Port + "/",
+                "http://localhost:" + settings.Port + "/"
+            };
+
+            Exception lastException = null;
+            foreach (var prefix in prefixes)
+            {
+                try
+                {
+                    _listener = new HttpListener();
+                    _listener.Prefixes.Add(prefix);
+                    _listener.Start();
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    lastException = ex;
+                    if (_listener != null)
+                    {
+                        try
+                        {
+                            _listener.Close();
+                        }
+                        catch
+                        {
+                        }
+                    }
+                }
+            }
+
+            if (_listener == null || !_listener.IsListening)
+            {
+                var message = "Không thể start HTTP listener ở port " + settings.Port +
+                              ". Nếu lỗi Access is denied, mở CMD/Powershell Admin và chạy: " +
+                              "netsh http add urlacl url=http://localhost:" + settings.Port + "/ user=%USERNAME%";
+                throw new InvalidOperationException(message, lastException);
+            }
 
             _cts = new CancellationTokenSource();
             _serverTask = Task.Run(() => ListenLoop(_cts.Token));
