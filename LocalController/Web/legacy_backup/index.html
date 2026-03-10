@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PC Remote</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <header class="header">
+            <div class="header-left">
+                <h1>PC Remote</h1>
+                <span class="status-badge" id="connectionStatus">Connected</span>
+            </div>
+            <div class="header-right">
+                <div class="refresh-container" id="manualRefreshBtn">
+                    <svg class="progress-ring" width="40" height="40">
+                        <circle class="progress-ring__circle" stroke="white" stroke-width="3" fill="transparent" r="16" cx="20" cy="20"/>
+                    </svg>
+                    <span class="material-icons-round refresh-icon">refresh</span>
+                </div>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <!-- Media Control Card -->
+            <section class="card media-card">
+                <div class="media-info">
+                    <div class="media-icon">
+                        <span class="material-icons-round">music_note</span>
+                    </div>
+                    <div class="media-text">
+                        <h2 id="mediaTitle">No Media Playing</h2>
+                        <p id="mediaArtist">Unknown Artist</p>
+                    </div>
+                </div>
+                <div class="media-controls">
+                    <button class="btn-icon" id="btnPrev">
+                        <span class="material-icons-round">skip_previous</span>
+                    </button>
+                    <button class="btn-icon btn-play-pause" id="btnPlayPause">
+                        <span class="material-icons-round" id="iconPlayPause">play_arrow</span>
+                    </button>
+                    <button class="btn-icon" id="btnNext">
+                        <span class="material-icons-round">skip_next</span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- Volume Control Card -->
+            <section class="card volume-card">
+                <div class="card-header">
+                    <span class="material-icons-round">volume_up</span>
+                    <h3>Volume</h3>
+                    <span class="value-display" id="volumeValue">50%</span>
+                </div>
+                <div class="volume-slider-container">
+                    <button class="btn-icon sm" id="btnMute">
+                        <span class="material-icons-round" id="iconMute">volume_up</span>
+                    </button>
+                    <button class="btn-icon sm" id="btnVolumeDown">
+                        <span class="material-icons-round">remove</span>
+                    </button>
+                    <input type="range" id="volumeSlider" min="0" max="100" value="50" class="slider">
+                    <button class="btn-icon sm" id="btnVolumeUp">
+                        <span class="material-icons-round">add</span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- System Control Card -->
+            <section class="card system-card">
+                <div class="card-header">
+                    <span class="material-icons-round">settings</span>
+                    <h3>System</h3>
+                </div>
+                <div class="system-actions">
+                    <button class="btn-action" id="btnLock">
+                        <span class="material-icons-round">lock</span>
+                        <span>Lock PC</span>
+                    </button>
+                    <!-- More system actions can be added here -->
+                </div>
+                <div class="system-info">
+                    <p>Status: <span id="lockState">Unknown</span></p>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>

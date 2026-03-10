@@ -1,96 +1,219 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="vi" class="antialiased">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PC Remote</title>
-    <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>PC Remote Control</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
     <!-- Material Icons -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        gray: {
+                            850: '#1f2937',
+                            900: '#111827',
+                            950: '#030712',
+                        }
+                    },
+                    animation: {
+                        'spin-slow': 'spin 3s linear infinite',
+                        'pulse-fast': 'pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        /* Custom Utilities not in Tailwind */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .dark .glass-panel {
+            background: rgba(17, 24, 39, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Hide scrollbar for clean UI */
+        ::-webkit-scrollbar {
+            width: 0px;
+            background: transparent;
+        }
+        
+        /* Range Slider Styling */
+        input[type=range] {
+            -webkit-appearance: none; 
+            background: transparent; 
+        }
+        
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+        }
+
+        input[type=range]:focus {
+            outline: none;
+        }
+        
+        /* Smooth transitions */
+        .transition-all-300 {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+    </style>
 </head>
-<body>
-    <div class="app-container">
-        <header class="header">
-            <div class="header-left">
-                <h1>PC Remote</h1>
-                <span class="status-badge" id="connectionStatus">Connected</span>
-            </div>
-            <div class="header-right">
-                <div class="refresh-container" id="manualRefreshBtn">
-                    <svg class="progress-ring" width="40" height="40">
-                        <circle class="progress-ring__circle" stroke="white" stroke-width="3" fill="transparent" r="16" cx="20" cy="20"/>
-                    </svg>
-                    <span class="material-icons-round refresh-icon">refresh</span>
+<body class="bg-gray-50 text-gray-900 min-h-screen selection:bg-indigo-500 selection:text-white transition-colors duration-300">
+
+    <div class="max-w-md mx-auto min-h-screen flex flex-col p-4 sm:p-6 gap-6">
+        
+        <!-- Header -->
+        <header class="flex justify-between items-center py-2">
+            <div>
+                <h1 class="text-2xl font-bold tracking-tight text-gray-900">PC Remote</h1>
+                <div id="connectionStatus" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700 mt-1 transition-colors">
+                    <span class="w-1.5 h-1.5 rounded-full bg-green-600 animate-pulse"></span>
+                    Connected
                 </div>
             </div>
+            
+            <button id="manualRefreshBtn" class="group relative w-10 h-10 rounded-full bg-white shadow-sm border border-gray-100 flex items-center justify-center hover:shadow-md active:scale-95 transition-all duration-200 overflow-hidden">
+                <svg class="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 40 40">
+                    <circle class="text-gray-100" stroke-width="3" stroke="currentColor" fill="transparent" r="16" cx="20" cy="20"/>
+                    <circle id="refreshProgress" class="text-indigo-600 transition-all duration-300 ease-linear" stroke-width="3" stroke-dasharray="100" stroke-dashoffset="100" stroke-linecap="round" stroke="currentColor" fill="transparent" r="16" cx="20" cy="20"/>
+                </svg>
+                <span class="material-icons-round text-gray-600 group-hover:text-indigo-600 transition-colors z-10 text-xl" id="refreshIcon">refresh</span>
+            </button>
         </header>
 
-        <main class="main-content">
-            <!-- Media Control Card -->
-            <section class="card media-card">
-                <div class="media-info">
-                    <div class="media-icon">
-                        <span class="material-icons-round">music_note</span>
+        <main class="flex-1 flex flex-col gap-5">
+            
+            <!-- Media Card -->
+            <section class="relative overflow-hidden rounded-3xl bg-indigo-600 text-white shadow-xl shadow-indigo-200 transition-transform duration-300 hover:scale-[1.01]">
+                <!-- Background Decoration -->
+                <div class="absolute top-0 right-0 -mr-8 -mt-8 w-40 h-40 rounded-full bg-white opacity-5 blur-2xl"></div>
+                <div class="absolute bottom-0 left-0 -ml-8 -mb-8 w-40 h-40 rounded-full bg-white opacity-5 blur-2xl"></div>
+                
+                <div class="relative p-6 flex flex-col gap-6">
+                    <div class="flex items-start gap-4">
+                        <div class="w-14 h-14 rounded-2xl bg-white/10 backdrop-blur-sm flex items-center justify-center shadow-inner border border-white/10 shrink-0">
+                            <span class="material-icons-round text-3xl text-white/90">music_note</span>
+                        </div>
+                        <div class="flex-1 min-w-0 pt-0.5">
+                            <h2 id="mediaTitle" class="text-lg font-semibold leading-tight truncate">No Media Playing</h2>
+                            <p id="mediaArtist" class="text-indigo-100 text-sm truncate mt-1 opacity-80">Unknown Artist</p>
+                        </div>
                     </div>
-                    <div class="media-text">
-                        <h2 id="mediaTitle">No Media Playing</h2>
-                        <p id="mediaArtist">Unknown Artist</p>
+                    
+                    <div class="flex items-center justify-between px-2">
+                        <button id="btnPrev" class="w-12 h-12 rounded-full flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 active:bg-white/20 transition-all">
+                            <span class="material-icons-round text-3xl">skip_previous</span>
+                        </button>
+                        
+                        <button id="btnPlayPause" class="w-16 h-16 rounded-full bg-white text-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-900/20 hover:scale-105 active:scale-95 transition-all duration-200">
+                            <span id="iconPlayPause" class="material-icons-round text-4xl ml-0.5">play_arrow</span>
+                        </button>
+                        
+                        <button id="btnNext" class="w-12 h-12 rounded-full flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 active:bg-white/20 transition-all">
+                            <span class="material-icons-round text-3xl">skip_next</span>
+                        </button>
                     </div>
-                </div>
-                <div class="media-controls">
-                    <button class="btn-icon" id="btnPrev">
-                        <span class="material-icons-round">skip_previous</span>
-                    </button>
-                    <button class="btn-icon btn-play-pause" id="btnPlayPause">
-                        <span class="material-icons-round" id="iconPlayPause">play_arrow</span>
-                    </button>
-                    <button class="btn-icon" id="btnNext">
-                        <span class="material-icons-round">skip_next</span>
-                    </button>
                 </div>
             </section>
 
-            <!-- Volume Control Card -->
-            <section class="card volume-card">
-                <div class="card-header">
-                    <span class="material-icons-round">volume_up</span>
-                    <h3>Volume</h3>
-                    <span class="value-display" id="volumeValue">50%</span>
+            <!-- Volume Card -->
+            <section class="rounded-3xl bg-white p-6 shadow-lg shadow-gray-100 border border-gray-100">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center gap-2.5 text-gray-500">
+                        <div class="p-2 bg-gray-50 rounded-lg">
+                            <span class="material-icons-round text-xl">volume_up</span>
+                        </div>
+                        <span class="text-sm font-semibold uppercase tracking-wider">Volume</span>
+                    </div>
+                    <span id="volumeValue" class="text-sm font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-md">50%</span>
                 </div>
-                <div class="volume-slider-container">
-                    <button class="btn-icon sm" id="btnMute">
-                        <span class="material-icons-round" id="iconMute">volume_up</span>
+                
+                <div class="flex items-center gap-3">
+                    <button id="btnMute" class="w-10 h-10 rounded-xl flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-50 transition-all">
+                        <span id="iconMute" class="material-icons-round">volume_up</span>
                     </button>
-                    <button class="btn-icon sm" id="btnVolumeDown">
-                        <span class="material-icons-round">remove</span>
-                    </button>
-                    <input type="range" id="volumeSlider" min="0" max="100" value="50" class="slider">
-                    <button class="btn-icon sm" id="btnVolumeUp">
-                        <span class="material-icons-round">add</span>
-                    </button>
+                    
+                    <div class="flex-1 relative h-12 flex items-center">
+                        <div class="absolute w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+                            <div id="volumeFill" class="h-full bg-indigo-500 rounded-full w-1/2 transition-all duration-100"></div>
+                        </div>
+                        <input type="range" id="volumeSlider" min="0" max="100" value="50" class="absolute w-full h-full opacity-0 cursor-pointer z-10">
+                        
+                        <!-- Custom Thumb visual (optional, implemented via CSS usually, but here we use simple div overlay if needed or rely on default invisible thumb interaction with visible track) -->
+                        <div id="volumeThumb" class="absolute h-5 w-5 bg-white border-2 border-indigo-500 rounded-full shadow-md pointer-events-none transition-all duration-100 left-1/2 -ml-2.5"></div>
+                    </div>
+                </div>
+                
+                <div class="flex justify-between gap-3 mt-4">
+                     <button id="btnVolumeDown" class="flex-1 py-2.5 rounded-xl bg-gray-50 text-gray-600 font-medium text-sm hover:bg-gray-100 active:bg-gray-200 transition-colors flex items-center justify-center gap-1">
+                        <span class="material-icons-round text-base">remove</span>
+                     </button>
+                     <button id="btnVolumeUp" class="flex-1 py-2.5 rounded-xl bg-gray-50 text-gray-600 font-medium text-sm hover:bg-gray-100 active:bg-gray-200 transition-colors flex items-center justify-center gap-1">
+                        <span class="material-icons-round text-base">add</span>
+                     </button>
                 </div>
             </section>
 
-            <!-- System Control Card -->
-            <section class="card system-card">
-                <div class="card-header">
-                    <span class="material-icons-round">settings</span>
-                    <h3>System</h3>
+            <!-- System Card -->
+            <section class="rounded-3xl bg-white p-6 shadow-lg shadow-gray-100 border border-gray-100">
+                <div class="flex items-center justify-between mb-5">
+                    <div class="flex items-center gap-2.5 text-gray-500">
+                        <div class="p-2 bg-gray-50 rounded-lg">
+                            <span class="material-icons-round text-xl">settings</span>
+                        </div>
+                        <span class="text-sm font-semibold uppercase tracking-wider">System</span>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                         <span class="w-2 h-2 rounded-full bg-gray-300" id="lockStatusDot"></span>
+                         <span id="lockState" class="text-xs font-medium text-gray-500">Unknown</span>
+                    </div>
                 </div>
-                <div class="system-actions">
-                    <button class="btn-action" id="btnLock">
-                        <span class="material-icons-round">lock</span>
-                        <span>Lock PC</span>
+                
+                <div class="grid grid-cols-2 gap-3">
+                    <button id="btnLock" class="flex flex-col items-center gap-2 p-4 rounded-2xl bg-rose-50 text-rose-600 hover:bg-rose-100 active:scale-95 transition-all border border-rose-100">
+                        <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm text-rose-500">
+                            <span class="material-icons-round">lock</span>
+                        </div>
+                        <span class="font-semibold text-sm">Lock PC</span>
                     </button>
-                    <!-- More system actions can be added here -->
-                </div>
-                <div class="system-info">
-                    <p>Status: <span id="lockState">Unknown</span></p>
+                    
+                     <!-- Placeholder for future action -->
+                    <button class="flex flex-col items-center gap-2 p-4 rounded-2xl bg-gray-50 text-gray-400 border border-gray-100 cursor-not-allowed opacity-60">
+                        <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm">
+                            <span class="material-icons-round">more_horiz</span>
+                        </div>
+                        <span class="font-semibold text-sm">More</span>
+                    </button>
                 </div>
             </section>
         </main>
+        
+        <footer class="text-center py-4">
+             <p class="text-xs text-gray-400 font-medium">AManoSoft Local Controller</p>
+        </footer>
     </div>
+
+    <!-- Application Logic -->
     <script src="app.js"></script>
 </body>
 </html>
