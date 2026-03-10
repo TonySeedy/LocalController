@@ -243,6 +243,17 @@ const UI = {
                 this.dom.lockStatusDot.className = "w-2 h-2 rounded-full bg-green-500";
             }
         }
+        
+        if (this.dom.btnLock) {
+            this.dom.btnLock.disabled = locked;
+            if (locked) {
+                this.dom.btnLock.classList.add('opacity-50', 'cursor-not-allowed', 'grayscale');
+                this.dom.btnLock.classList.remove('hover:bg-rose-100', 'active:scale-95');
+            } else {
+                this.dom.btnLock.classList.remove('opacity-50', 'cursor-not-allowed', 'grayscale');
+                this.dom.btnLock.classList.add('hover:bg-rose-100', 'active:scale-95');
+            }
+        }
     },
 
     renderProgress(timeLeft) {
