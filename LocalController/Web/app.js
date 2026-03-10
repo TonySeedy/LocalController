@@ -28,6 +28,7 @@ const store = {
         isUpdating: false,
         lastVolumeUpdate: 0,
         isConnected: true,
+        isAuthRequired: false,
         password: localStorage.getItem('lc_password') || '',
         data: {
             media: { title: 'No Media Playing', artist: 'Unknown', playing: false },
@@ -72,6 +73,7 @@ const UI = {
     },
 
     showPasswordModal() {
+        store.setState({ isAuthRequired: true });
         if (this.dom.passwordModal) {
             this.dom.passwordModal.classList.remove('hidden');
             if (this.dom.passwordDisplay) this.dom.passwordDisplay.value = '';
@@ -80,6 +82,7 @@ const UI = {
     },
     
     hidePasswordModal() {
+        store.setState({ isAuthRequired: false });
         if (this.dom.passwordModal) {
             this.dom.passwordModal.classList.add('hidden');
         }
@@ -89,6 +92,10 @@ const UI = {
         if (this.dom.passwordDisplay) {
             this.dom.passwordDisplay.value += digit;
             if (this.dom.passwordError) this.dom.passwordError.classList.add('opacity-0');
+            
+            if (this.dom.passwordDisplay.value.length >= 4) {
+                this.submitPassword();
+            }
         }
     },
     
@@ -225,9 +232,9 @@ const UI = {
         if (this.timer) clearInterval(this.timer);
         
         this.timer = setInterval(() => {
-            const { isUpdating, timeLeft } = store.state;
+            const { isUpdating, timeLeft, isAuthRequired } = store.state;
             
-            if (!isUpdating) {
+            if (!isUpdating && !isAuthRequired) {
                 let newTimeLeft = timeLeft - CONFIG.UPDATE_STEP_MS;
                 
                 if (newTimeLeft <= 0) {
