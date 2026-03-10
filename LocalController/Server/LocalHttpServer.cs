@@ -5,7 +5,7 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Web.Script.Serialization;
+using System.Text.Json;
 using LocalController.Config;
 using LocalController.Logger;
 using LocalController.Models;
@@ -22,7 +22,6 @@ namespace LocalController.Server
         private readonly SystemService _systemService;
         private readonly StatusService _statusService;
         private readonly string _baseDirectory;
-        private readonly JavaScriptSerializer _serializer;
 
         private HttpListener _listener;
         private CancellationTokenSource _cts;
@@ -46,7 +45,6 @@ namespace LocalController.Server
             _systemService = systemService;
             _statusService = statusService;
             _baseDirectory = baseDirectory;
-            _serializer = new JavaScriptSerializer();
         }
 
         public void Start(AppSettings settings)
@@ -253,14 +251,38 @@ namespace LocalController.Server
                 if (path == "/api/volume/set" && method == "POST")
                 {
                     var body = ReadBody(request);
-                    var payload = _serializer.Deserialize<Dictionary<string, object>>(body);
+                    Dictionary<string, JsonElement> payload = null;
+                    try
+                    {
+                        payload = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(body);
+                    }
+                    catch { }
+
                     if (payload == null || !payload.ContainsKey("value"))
                     {
                         WriteJson(response, Error("Invalid request"));
                         return;
                     }
 
-                    var value = Convert.ToInt32(payload["value"]);
+                    int value;
+                    try
+                    {
+                        value = payload["value"].GetInt32();
+                    }
+                    catch
+                    {
+                        // Fallback or handle error
+                        if (payload["value"].ValueKind == JsonValueKind.String && int.TryParse(payload["value"].GetString(), out int v))
+                        {
+                            value = v;
+                        }
+                        else
+                        {
+                            WriteJson(response, Error("Invalid value"));
+                            return;
+                        }
+                    }
+
                     var result = _volumeService.SetVolume(value);
                     WriteJson(response, Success("Volume updated", new { volume = result }));
                     return;
@@ -333,7 +355,7 @@ namespace LocalController.Server
 
         private void WriteJson(HttpListenerResponse response, ApiResponse apiResponse, int statusCode = 200)
         {
-            var json = _serializer.Serialize(apiResponse);
+            var json = JsonSerializer.Serialize(apiResponse);
             var bytes = Encoding.UTF8.GetBytes(json);
             response.StatusCode = statusCode;
             response.ContentType = "application/json; charset=utf-8";
