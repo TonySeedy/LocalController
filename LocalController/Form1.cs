@@ -22,22 +22,9 @@ namespace LocalController
         private LocalHttpServer _server;
         private AppSettings _settings;
 
-        private Label _lblStatus;
-        private Label _lblAddress;
-        private TextBox _txtPort;
-        private TextBox _txtRefreshInterval;
-        private TextBox _txtPassword;
-        private Button _btnStart;
-        private Button _btnStop;
-        private TextBox _txtLogs;
-
         public Form1()
         {
             InitializeComponent();
-            Text = "PC Remote Server";
-            Width = 760;
-            Height = 560;
-            StartPosition = FormStartPosition.CenterScreen;
 
             var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
             _settingsManager = new SettingsManager(baseDirectory);
@@ -49,66 +36,13 @@ namespace LocalController
             _systemService = new SystemService();
             _statusService = new StatusService(_volumeService, _mediaService, _systemService, _configService);
 
-            BuildLayout();
+            // Cấu hình ban đầu cho UI từ settings
+            _txtPort.Text = _settings.Port.ToString();
+            _txtRefreshInterval.Text = _settings.RefreshInterval.ToString();
+            _txtPassword.Text = _settings.Password;
+
             BindEvents();
             UpdateStatus(false);
-        }
-
-        private void BuildLayout()
-        {
-            var panel = new TableLayoutPanel
-            {
-                Dock = DockStyle.Fill,
-                ColumnCount = 2,
-                RowCount = 9,
-                Padding = new Padding(12)
-            };
-            panel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 180));
-            panel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-            panel.RowStyles.Add(new RowStyle(SizeType.Absolute, 32));
-            panel.RowStyles.Add(new RowStyle(SizeType.Absolute, 32));
-            panel.RowStyles.Add(new RowStyle(SizeType.Absolute, 32));
-            panel.RowStyles.Add(new RowStyle(SizeType.Absolute, 32));
-            panel.RowStyles.Add(new RowStyle(SizeType.Absolute, 32)); // Password
-            panel.RowStyles.Add(new RowStyle(SizeType.Absolute, 42)); // Buttons
-            panel.RowStyles.Add(new RowStyle(SizeType.Absolute, 12)); // Spacing
-            panel.RowStyles.Add(new RowStyle(SizeType.Absolute, 28)); // Logs Label
-            panel.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
-
-            panel.Controls.Add(new Label { Text = "Status:", Dock = DockStyle.Fill, TextAlign = System.Drawing.ContentAlignment.MiddleLeft }, 0, 0);
-            _lblStatus = new Label { Text = "STOPPED", Dock = DockStyle.Fill, TextAlign = System.Drawing.ContentAlignment.MiddleLeft };
-            panel.Controls.Add(_lblStatus, 1, 0);
-
-            panel.Controls.Add(new Label { Text = "Địa chỉ truy cập:", Dock = DockStyle.Fill, TextAlign = System.Drawing.ContentAlignment.MiddleLeft }, 0, 1);
-            _lblAddress = new Label { Text = "-", Dock = DockStyle.Fill, TextAlign = System.Drawing.ContentAlignment.MiddleLeft };
-            panel.Controls.Add(_lblAddress, 1, 1);
-
-            panel.Controls.Add(new Label { Text = "Port:", Dock = DockStyle.Fill, TextAlign = System.Drawing.ContentAlignment.MiddleLeft }, 0, 2);
-            _txtPort = new TextBox { Dock = DockStyle.Fill, Text = _settings.Port.ToString() };
-            panel.Controls.Add(_txtPort, 1, 2);
-
-            panel.Controls.Add(new Label { Text = "Refresh interval (ms):", Dock = DockStyle.Fill, TextAlign = System.Drawing.ContentAlignment.MiddleLeft }, 0, 3);
-            _txtRefreshInterval = new TextBox { Dock = DockStyle.Fill, Text = _settings.RefreshInterval.ToString() };
-            panel.Controls.Add(_txtRefreshInterval, 1, 3);
-
-            panel.Controls.Add(new Label { Text = "Mật khẩu (chỉ nhập số, để trống nếu không dùng):", Dock = DockStyle.Fill, TextAlign = System.Drawing.ContentAlignment.MiddleLeft }, 0, 4);
-            _txtPassword = new TextBox { Dock = DockStyle.Fill, Text = _settings.Password, UseSystemPasswordChar = true };
-            panel.Controls.Add(_txtPassword, 1, 4);
-
-            var buttonPanel = new FlowLayoutPanel { Dock = DockStyle.Fill };
-            _btnStart = new Button { Text = "Start", Width = 100, Height = 30 };
-            _btnStop = new Button { Text = "Stop", Width = 100, Height = 30, Enabled = false };
-            buttonPanel.Controls.Add(_btnStart);
-            buttonPanel.Controls.Add(_btnStop);
-            panel.Controls.Add(new Label { Text = "", Dock = DockStyle.Fill }, 0, 5);
-            panel.Controls.Add(buttonPanel, 1, 5);
-
-            panel.Controls.Add(new Label { Text = "Logs:", Dock = DockStyle.Fill, TextAlign = System.Drawing.ContentAlignment.MiddleLeft }, 0, 7);
-            _txtLogs = new TextBox { Dock = DockStyle.Fill, Multiline = true, ReadOnly = true, ScrollBars = ScrollBars.Vertical };
-            panel.Controls.Add(_txtLogs, 0, 8);
-            panel.SetColumnSpan(_txtLogs, 2);
-
-            Controls.Add(panel);
         }
 
         private void BindEvents()
