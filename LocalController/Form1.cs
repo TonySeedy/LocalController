@@ -21,9 +21,11 @@ namespace LocalController
 
         private LocalHttpServer _server;
         private AppSettings _settings;
+        private readonly bool _startHidden;
 
-        public Form1()
+        public Form1(bool startHidden = false)
         {
+            _startHidden = startHidden;
             InitializeComponent();
 
             var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
@@ -43,6 +45,23 @@ namespace LocalController
 
             BindEvents();
             UpdateStatus(false);
+
+            if (_startHidden)
+            {
+                // Khi hidden, Load event có thể không được gọi hoặc gọi chậm do Handle bị suppress.
+                // Nên ta khởi động server trực tiếp luôn.
+                StartServerInternal();
+            }
+        }
+
+        protected override void SetVisibleCore(bool value)
+        {
+            if (_startHidden && !this.IsHandleCreated)
+            {
+                CreateHandle();
+                value = false;
+            }
+            base.SetVisibleCore(value);
         }
 
         private void BindEvents()
@@ -75,6 +94,11 @@ namespace LocalController
             };
             _configService.SaveSettings(_settings);
 
+            StartServerInternal();
+        }
+
+        private void StartServerInternal()
+        {
             _server = new LocalHttpServer(
                 _logger,
                 _configService,
@@ -91,7 +115,10 @@ namespace LocalController
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Không thể start server: " + ex.Message);
+                if (!_startHidden)
+                {
+                    MessageBox.Show("Không thể start server: " + ex.Message);
+                }
                 _logger.Log("Failed to start server: " + ex.Message);
                 UpdateStatus(false);
             }
@@ -127,6 +154,12 @@ namespace LocalController
 
         private void UpdateStatus(bool running)
         {
+            if (InvokeRequired)
+            {
+                BeginInvoke(new Action<bool>(UpdateStatus), running);
+                return;
+            }
+
             _lblStatus.Text = running ? "RUNNING" : "STOPPED";
             _btnStart.Enabled = !running;
             _btnStop.Enabled = running;
