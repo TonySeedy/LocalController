@@ -184,6 +184,18 @@ namespace LocalController.Server
                     return;
                 }
 
+                if (path == "/local_controller.png")
+                {
+                    ServeStatic(response, "local_controller.png", "image/png");
+                    return;
+                }
+
+                if (path == "/logo.png")
+                {
+                    ServeStatic(response, "logo.png", "image/png");
+                    return;
+                }
+
                 if (path == "/api/auth" && method == "POST")
                 {
                     var body = ReadBody(request);
